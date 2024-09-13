@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Flask-Viewsets"
-version = "0.1.2"
+version = "0.1.3"
 description = "Adds Django REST Framework inspired viewsets to Flask."
 authors = ["Quentin Boudinel <quentin.boudinel@atelier-26.net>"]
 readme = "README.md"
