@@ -1,14 +1,19 @@
 from abc import ABCMeta
+from collections.abc import Callable, Iterable
 from typing import Any
 
-from flask import abort, request, current_app
-from flask.views import View
+from flask import abort, current_app, request
 from flask.typing import ResponseReturnValue, RouteCallable
+from flask.views import View
 
 from .typing import ConverterType
 
 
 class ViewSet(View, metaclass=ABCMeta):
+    action_decorators: dict[str, Iterable[Callable[[RouteCallable], RouteCallable]]] = (
+        {}
+    )
+
     def __init__(
         self, method_actions: dict[str, str], *args: Any, **kwargs: Any
     ) -> None:
@@ -25,10 +30,14 @@ class ViewSet(View, metaclass=ABCMeta):
         if action is None:
             abort(405)
 
-        func = getattr(self, action, None)
+        func: RouteCallable | None = getattr(self, action, None)
 
         if func is None:
             raise RuntimeError(f"{action} not defined on {self.__class__.__name__}")
+
+        if action in self.action_decorators:
+            for decorator in self.action_decorators[action]:
+                func = decorator(func)
 
         return current_app.ensure_sync(func)(**kwargs)
 

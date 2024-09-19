@@ -1,7 +1,9 @@
+from typing import Any
+
 import pytest
 from flask import Flask
 from flask.testing import FlaskClient
-from flask.typing import ResponseReturnValue
+from flask.typing import ResponseReturnValue, RouteCallable
 
 from flask_viewsets import ViewSet
 
@@ -13,7 +15,17 @@ def app():
         "TESTING": True,
     })
 
+    def decorator(func: RouteCallable) -> RouteCallable:
+        def decorated(*args: Any, **kwargs: Any) -> ResponseReturnValue:
+            return {}, 200
+
+        return decorated
+
     class TestViewSet(ViewSet):
+        action_decorators = {
+            "to_be_decorated": (lambda f: f, decorator),
+        }
+
         def create(self) -> ResponseReturnValue:
             return {"id": 0}, 201
 
@@ -32,6 +44,9 @@ def app():
         def destroy(self, id: int) -> ResponseReturnValue:
             return b"", 204
 
+        def to_be_decorated(self) -> ResponseReturnValue:
+            raise NotImplementedError("This needs to be decorated.")
+
     app.add_url_rule(
         "/",
         view_func=TestViewSet.as_view({
@@ -46,6 +61,12 @@ def app():
             "put": "update",
             "patch": "partial_update",
             "delete": "destroy",
+        }),
+    )
+    app.add_url_rule(
+        "/to_be_decorated",
+        view_func=TestViewSet.as_view({
+            "get": "to_be_decorated",
         }),
     )
 
@@ -77,3 +98,5 @@ def test_add_viewset(app: Flask, client: FlaskClient):
     assert response.status_code == 204
     response = client.trace("/")
     assert response.status_code == 405
+    response = client.get("/to_be_decorated")
+    assert response.status_code == 200
