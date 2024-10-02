@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Flask-Viewsets"
-version = "0.1.4"
+version = "0.2.0"
 description = "Adds Django REST Framework inspired viewsets to Flask."
 authors = ["Quentin Boudinel <quentin.boudinel@atelier-26.net>"]
 readme = "README.md"
@@ -9,10 +9,21 @@ repository = "https://github.com/quentinboudinel/Flask-Viewsets"
 [tool.poetry.dependencies]
 python = "^3.12"
 flask = "^3.0.3"
+lark = "^1.2.2"
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
+ruff = "^0.6.8"
+flask-sqlalchemy = "^3.1.1"
+flask-marshmallow = "^1.2.1"
+marshmallow-sqlalchemy = "^1.1.0"
+
+[tool.ruff]
+select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["ANN201", "D100", "D103", "PLR2004", "S101"]
 
 [build-system]
 requires = ["poetry-core"]

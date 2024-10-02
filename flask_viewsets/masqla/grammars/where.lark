@@ -1,0 +1,59 @@
+?where: _expr
+
+_expr: or_ | and_ | not_ | _atom
+or_: _or_operand _OR _or_operand
+_or_operand: and_ | not_ | _atom
+and_: _and_operand _AND _and_operand
+_and_operand: not_ | _atom
+not_: _NOT _atom
+
+_atom: "(" _expr ")" | operation | _value
+
+operation: NAME _EQ (NAME | _value)       -> eq
+         | NAME _NE (NAME | _value)       -> ne
+         | NAME _GT (NAME | _value)       -> gt
+         | NAME _GE (NAME | _value)       -> ge
+         | NAME _LT (NAME | _value)       -> lt
+         | NAME _LE (NAME | _value)       -> le
+         | NAME _LI (NAME | _value)       -> like
+         | NAME _IL (NAME | _value)       -> ilike
+         | NAME _CT (NAME | _value)       -> contains
+         | NAME _IN (NAME | _value)       -> in_
+
+_value: object
+      | array
+      | STRING
+      | NUMBER
+      | TRUE
+      | FALSE
+      | NULL
+
+object: "{" [pair ("," pair)*] "}"
+pair: STRING ":" _value
+
+array: "[" [_value ("," _value)*] "]"
+
+NULL: "null"
+TRUE: "true"
+FALSE: "false"
+
+_OR: "|"
+_AND: "&"
+_NOT: "!"
+_EQ: "="
+_NE: "!="
+_GT: ">"
+_GE: ">="
+_LT: "<"
+_LE: "<="
+_CT: "#"
+_IN: "@"
+_LI: "~"
+_IL: "~*"
+
+%import common.CNAME            -> NAME
+%import common.SIGNED_NUMBER    -> NUMBER
+%import common.ESCAPED_STRING   -> STRING
+%import common.WS
+
+%ignore WS
