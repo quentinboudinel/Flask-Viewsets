@@ -11,7 +11,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flask_viewsets import ViewSets
 from flask_viewsets.masqla.viewsets import AbstractBaseModelViewSet
-from flask_viewsets.typing import Model, Schema
+from flask_viewsets.typing import Model, ModelSchema
 
 if TYPE_CHECKING:
     from flask.typing import ResponseReturnValue
@@ -46,7 +46,7 @@ def model(db: SQLAlchemy) -> type[Model]:
 
 
 @pytest.fixture
-def schema_cls(ma: Marshmallow, model: type[Model]) -> type[Schema]:
+def schema_cls[M: Model](ma: Marshmallow, model: type[M]) -> type[ModelSchema[M]]:
     m = model
 
     class TestSchema(ma.SQLAlchemyAutoSchema):
@@ -56,11 +56,11 @@ def schema_cls(ma: Marshmallow, model: type[Model]) -> type[Schema]:
     return TestSchema
 
 
-def test_model_viewset(
+def test_model_viewset[M: Model](
     db: SQLAlchemy,
     app: Flask,
-    model: type[Model],
-    schema_cls: type[Schema],
+    model: type[M],
+    schema_cls: type[ModelSchema[M]],
 ) -> None:
     vs = ViewSets()
     vs.init_app(app)
@@ -103,14 +103,14 @@ def test_model_viewset(
     assert response.json == {"id": 0}
 
 
-def test_base_model_viewset(
+def test_base_model_viewset[M: Model](
     app: Flask,
     db: SQLAlchemy,
-    model: type[Model],
-    schema_cls: type[Schema],
+    model: type[M],
+    schema_cls: type[ModelSchema[M]],
 ) -> None:
-    class BaseModelViewSet[M: Model, S: Schema](
-        AbstractBaseModelViewSet[M, S],
+    class BaseModelViewSet[M_: Model](
+        AbstractBaseModelViewSet[M_],
         metaclass=ABCMeta,
     ):
         def action(self, **_: Any) -> ResponseReturnValue:  # noqa: ANN401

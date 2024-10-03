@@ -24,7 +24,6 @@ from flask_sqlalchemy.model import Model
 
 type ConverterType = int | float | str | UUID
 type RouteDecorator = Callable[[RouteCallable], RouteCallable]
-type Schema = SQLAlchemySchema | SQLAlchemyAutoSchema
+type ModelSchema[M: Model] = SQLAlchemySchema | SQLAlchemyAutoSchema
 
-
-__all__ = ("ConverterType", "Model", "RouteDecorator", "Schema")
+__all__ = ("ConverterType", "Model", "RouteDecorator", "ModelSchema")

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from flask import Flask
 
     from .masqla.viewsets import AbstractBaseModelViewSet
-    from .typing import Model, Schema
+    from .typing import Model
 
 
 class ViewSetsConfig(TypedDict):
@@ -59,7 +59,7 @@ class ViewSets:
     >>> viewsets.init_app(app)
     """
 
-    ModelViewSet: type[AbstractBaseModelViewSet[Model, Schema]] | None = None
+    ModelViewSet: type[AbstractBaseModelViewSet[Model]] | None = None
 
     def __init__(
         self,
@@ -129,7 +129,7 @@ class ViewSets:
         # TODO(quentinboudinel): TD-1
         # TD-1
 
-        class ModelViewSet[M: Model, S: Schema](base_model_view_set[M, S]):  # type: ignore[todo]
+        class ModelViewSet[M: Model](base_model_view_set[M]):  # type: ignore[todo]
             # TODO(quentinboudinel): TD-1
             # TD-1
             db = app.extensions["sqlalchemy"]

@@ -19,19 +19,21 @@ if TYPE_CHECKING:
     from flask_sqlalchemy import SQLAlchemy
 
     from flask_viewsets.extension import ViewSets
-    from flask_viewsets.typing import Model, Schema
+    from flask_viewsets.typing import Model, ModelSchema
 
 
-class AbstractBaseModelViewSet[M: Model, S: Schema](ViewSet, metaclass=ABCMeta):
+class AbstractBaseModelViewSet[M: Model](ViewSet, metaclass=ABCMeta):
     """A viewset that provides default implementations for model CRUD operations."""
 
     model: type[M]  # ClassVar[type[M]]
-    schema_cls: Callable[[], S] | type[S]  # ClassVar[type[S]]
+    schema_cls: (
+        Callable[[], ModelSchema[M]] | type[ModelSchema[M]]
+    )  # ClassVar[type[ModelSchema[M]]]
     db: SQLAlchemy
     vs: ViewSets
 
     @property
-    def schema(self) -> S:
+    def schema(self) -> ModelSchema[M]:
         """Return the schema instance."""
         return self.get_schema()
 
@@ -70,7 +72,7 @@ class AbstractBaseModelViewSet[M: Model, S: Schema](ViewSet, metaclass=ABCMeta):
         """Return the offset for the query from request arguments."""
         return request.args.get("offset", type=int)
 
-    def get_schema(self) -> S:
+    def get_schema(self) -> ModelSchema[M]:
         """Return the schema instance."""
         return self.schema_cls()
 
