@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from collections.abc import Generator, Sequence
+from collections.abc import Callable, Generator, Sequence
 from typing import TYPE_CHECKING, Any, cast
 
 from flask import abort, request
@@ -26,7 +26,7 @@ class AbstractBaseModelViewSet[M: Model, S: Schema](ViewSet, metaclass=ABCMeta):
     """A viewset that provides default implementations for model CRUD operations."""
 
     model: type[M]  # ClassVar[type[M]]
-    schema_cls: type[S]  # ClassVar[type[S]]
+    schema_cls: Callable[[], S] | type[S]  # ClassVar[type[S]]
     db: SQLAlchemy
     vs: ViewSets
 
