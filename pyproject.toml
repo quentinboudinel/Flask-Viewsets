@@ -3,7 +3,7 @@ enable_incomplete_feature = "NewGenericSyntax"
 
 [tool.poetry]
 name = "Flask-Viewsets"
-version = "0.2.5"
+version = "0.2.6"
 description = "Adds Django REST Framework inspired viewsets to Flask."
 authors = ["Quentin Boudinel <quentin.boudinel@atelier-26.net>"]
 readme = "README.md"

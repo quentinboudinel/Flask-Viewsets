@@ -12,7 +12,7 @@ Type Aliases:
 from __future__ import annotations
 
 from abc import ABCMeta
-from collections.abc import Callable, Generator, Sequence
+from collections.abc import Generator, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from flask import abort, current_app, request
@@ -129,9 +129,7 @@ class ModelViewSet[M: Model](ViewSet, metaclass=ABCMeta):
     """A viewset that provides default implementations for model CRUD operations."""
 
     model: type[M]  # ClassVar[type[M]]
-    schema_cls: (
-        Callable[[], ModelSchema[M]] | type[ModelSchema[M]]
-    )  # ClassVar[type[ModelSchema[M]]]
+    schema_cls: ModelSchema[M] | type[ModelSchema[M]]  # ClassVar[type[ModelSchema[M]]]
     db: SQLAlchemy
     ma: Marshmallow
 
@@ -177,6 +175,8 @@ class ModelViewSet[M: Model](ViewSet, metaclass=ABCMeta):
 
     def get_schema(self) -> ModelSchema[M]:
         """Return the schema instance."""
+        if not isinstance(self.schema_cls, type):
+            return self.schema_cls
         return self.schema_cls()
 
     def get_instances(self) -> Sequence[M]:
