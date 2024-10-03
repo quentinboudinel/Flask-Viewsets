@@ -59,8 +59,14 @@ class ViewSets[VST: ViewSet, MVST: ModelViewSet]:
         :type config: ViewSetsConfig | None, optional
         """
         self.config: ViewSetsConfig = config or {}
-        self.view_set_cls = view_set_cls
-        self.model_view_set_cls = model_view_set_cls
+        self.ViewSet = view_set_cls
+
+        class ModelViewSet[M: Model](model_view_set_cls):
+            model: type[M]  # type: ignore[override]
+            vs: ViewSets[VST, MVST] = self
+
+        self.ModelViewSet = ModelViewSet
+
         if app is not None:
             self.init_app(app)
 
@@ -73,8 +79,6 @@ class ViewSets[VST: ViewSet, MVST: ModelViewSet]:
         self.config = app.config.get("VIEWSETS", {})  # type: ignore[partially-unknown]
         app.extensions["viewsets"] = self
 
-        self.ViewSet = self.view_set_cls
-
         if find_spec("flask_sqlalchemy") is None:
             return
         if find_spec("marshmallow_sqlalchemy") is None:
@@ -82,23 +86,18 @@ class ViewSets[VST: ViewSet, MVST: ModelViewSet]:
         if find_spec("flask_marshmallow") is None:
             return
 
-        db_: SQLAlchemy | None = app.extensions.get("sqlalchemy")
-        ma_: Marshmallow | None = app.extensions.get("flask-marshmallow")
+        db: SQLAlchemy | None = app.extensions.get("sqlalchemy")
+        ma: Marshmallow | None = app.extensions.get("flask-marshmallow")
 
-        if db_ is None:
+        if db is None:
             msg = "SQLAlchemy extension has to be initialized before ViewSets."
             warnings.warn(msg, stacklevel=2)
             return
 
-        if ma_ is None:
+        if ma is None:
             msg = "Flask-Marshmallow extension has to be initialized before ViewSets."
             warnings.warn(msg, stacklevel=2)
             return
 
-        class ModelViewSet[M: Model](self.model_view_set_cls):
-            model: type[M]  # type: ignore[override]
-            db = db_
-            ma = ma_
-            vs: ViewSets[VST, MVST] = self
-
-        self.ModelViewSet = ModelViewSet
+        self.ModelViewSet.db = db
+        self.ModelViewSet.ma = ma

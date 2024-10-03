@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from flask.typing import ResponseReturnValue, RouteCallable
+    from flask_marshmallow import Marshmallow
     from flask_sqlalchemy import SQLAlchemy
 
     from flask_viewsets.extension import ViewSets
@@ -132,6 +133,7 @@ class ModelViewSet[M: Model](ViewSet, metaclass=ABCMeta):
         Callable[[], ModelSchema[M]] | type[ModelSchema[M]]
     )  # ClassVar[type[ModelSchema[M]]]
     db: SQLAlchemy
+    ma: Marshmallow
 
     @property
     def schema(self) -> ModelSchema[M]:
