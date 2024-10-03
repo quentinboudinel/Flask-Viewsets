@@ -1,6 +1,9 @@
+[tool.mypy]
+enable_incomplete_feature = "NewGenericSyntax"
+
 [tool.poetry]
 name = "Flask-Viewsets"
-version = "0.2.3"
+version = "0.2.4"
 description = "Adds Django REST Framework inspired viewsets to Flask."
 authors = ["Quentin Boudinel <quentin.boudinel@atelier-26.net>"]
 readme = "README.md"
@@ -18,9 +21,13 @@ ruff = "^0.6.8"
 flask-sqlalchemy = "^3.1.1"
 flask-marshmallow = "^1.2.1"
 marshmallow-sqlalchemy = "^1.1.0"
+mypy = "^1.11.2"
 
 [tool.ruff]
 select = ["ALL"]
+
+[tool.ruff.format]
+preview = true
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["ANN201", "D100", "D103", "PLR2004", "S101"]

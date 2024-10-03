@@ -10,8 +10,8 @@ from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 
 from flask_viewsets import ViewSets
-from flask_viewsets.masqla.viewsets import ModelViewSet
 from flask_viewsets.typing import Model, ModelSchema
+from flask_viewsets.viewsets import ModelViewSet
 
 if TYPE_CHECKING:
     from flask.typing import ResponseReturnValue
@@ -62,7 +62,7 @@ def test_model_viewset[M: Model](
     model: type[M],
     schema_cls: type[ModelSchema[M]],
 ) -> None:
-    vs = ViewSets[Model]()
+    vs = ViewSets()
     vs.init_app(app)
 
     with app.app_context():
@@ -76,7 +76,7 @@ def test_model_viewset[M: Model](
 
     assert vs.ModelViewSet is not None
 
-    class TestViewSet(vs.ModelViewSet):
+    class TestViewSet(vs.ModelViewSet[M]):
         model = m
         schema_cls = s
 
@@ -109,14 +109,14 @@ def test_base_model_viewset[M: Model](
     model: type[M],
     schema_cls: type[ModelSchema[M]],
 ) -> None:
-    class MyModelViewSet[M_: Model](
-        ModelViewSet[M_],
+    class MyModelViewSet(
+        ModelViewSet[M],
         metaclass=ABCMeta,
     ):
         def action(self, **_: Any) -> ResponseReturnValue:  # noqa: ANN401
             return {"message": "action"}, 200
 
-    vs = ViewSets[Model](model_view_set_cls=MyModelViewSet)
+    vs = ViewSets(model_view_set_cls=MyModelViewSet)
     vs.init_app(app)
 
     with app.app_context():
@@ -130,7 +130,7 @@ def test_base_model_viewset[M: Model](
 
     assert vs.ModelViewSet is not None
 
-    class TestViewSet(vs.ModelViewSet):
+    class TestViewSet(vs.ModelViewSet[M]):
         model = m
         schema_cls = s
 

@@ -16,7 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
-from flask_viewsets.masqla.parsers import WhereParser
+from flask_viewsets.parsers import WhereParser
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.elements import CompilerElement
