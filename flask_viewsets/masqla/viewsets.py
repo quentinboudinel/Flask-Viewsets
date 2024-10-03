@@ -18,11 +18,10 @@ if TYPE_CHECKING:
     from flask.typing import ResponseReturnValue
     from flask_sqlalchemy import SQLAlchemy
 
-    from flask_viewsets.extension import ViewSets
     from flask_viewsets.typing import Model, ModelSchema
 
 
-class AbstractBaseModelViewSet[M: Model](ViewSet, metaclass=ABCMeta):
+class ModelViewSet[M: Model](ViewSet, metaclass=ABCMeta):
     """A viewset that provides default implementations for model CRUD operations."""
 
     model: type[M]  # ClassVar[type[M]]
@@ -30,7 +29,6 @@ class AbstractBaseModelViewSet[M: Model](ViewSet, metaclass=ABCMeta):
         Callable[[], ModelSchema[M]] | type[ModelSchema[M]]
     )  # ClassVar[type[ModelSchema[M]]]
     db: SQLAlchemy
-    vs: ViewSets
 
     @property
     def schema(self) -> ModelSchema[M]:

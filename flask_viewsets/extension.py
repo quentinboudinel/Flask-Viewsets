@@ -10,7 +10,7 @@ Classes:
 from __future__ import annotations
 
 from importlib.util import find_spec
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, TypedDict, cast
 
 from .viewsets import ViewSet
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
     from flask import Flask
 
-    from .masqla.viewsets import AbstractBaseModelViewSet
+    from .masqla.viewsets import ModelViewSet
     from .typing import Model
 
 
@@ -35,7 +35,7 @@ class ViewSetsConfig(TypedDict):
     max_limit: NotRequired[int]
 
 
-class ViewSets:
+class ViewSets[M: Model]:
     """A class to manage and initialize view sets for a Flask application.
 
     :ivar config: Configuration for the view sets.
@@ -48,9 +48,9 @@ class ViewSets:
     :type app: Flask | None
     :param view_set_cls: The class to be used for view sets. Defaults to `ViewSet`.
     :type view_set_cls: type[ViewSet]
-    :param base_model_view_set: The class to be used for model view sets. Defaults to
+    :param model_view_set_cls: The class to be used for model view sets. Defaults to
         `None`.
-    :type base_model_view_set: type[ModelViewSet[Model, Schema]] | None
+    :type model_view_set_cls: type[ModelViewSet[Model, Schema]] | None
 
     :raises ValueError: If the configuration is invalid.
 
@@ -59,15 +59,13 @@ class ViewSets:
     >>> viewsets.init_app(app)
     """
 
-    ModelViewSet: type[AbstractBaseModelViewSet[Model]] | None = None
+    ModelViewSet: type[ModelViewSet[M]] | None = None
 
     def __init__(
         self,
         app: Flask | None = None,
         view_set_cls: type[ViewSet] = ViewSet,
-        base_model_view_set: type[AbstractBaseModelViewSet] | None = None,  # type: ignore[todo]
-        # TODO(quentinboudinel): Fix base_model_view_set type
-        # TD-1
+        model_view_set_cls: type[ModelViewSet[M]] | None = None,
         config: ViewSetsConfig | None = None,
     ) -> None:
         """Initialize the extension.
@@ -78,17 +76,15 @@ class ViewSets:
         :param view_set_cls: The class to be used for view sets. Defaults
             to `ViewSet`.
         :type view_set_cls: type[ViewSet]
-        :param base_model_view_set: The class to be used for model view sets. Defaults
+        :param model_view_set_cls: The class to be used for model view sets. Defaults
             to `None`.
-        :type base_model_view_set: type[ModelViewSet[Model, Schema]] | None
+        :type model_view_set_cls: type[ModelViewSet[Model, Schema]] | None
         :param config: Configuration for the view sets. Defaults to `None`.
         :type config: ViewSetsConfig | None
         """
         self.config: ViewSetsConfig = config or {}
         self.view_set_cls = view_set_cls
-        self.base_model_view_set = base_model_view_set  # type: ignore[todo]
-        # TODO(quentinboudinel): TD-1
-        # TD-1
+        self.model_view_set_cls = model_view_set_cls
         if app is not None:
             self.init_app(app)
 
@@ -104,7 +100,7 @@ class ViewSets:
         :param app: The Flask application instance to initialize.
         :type app: Flask
         """
-        self.config = app.config.get("VIEWSETS", {})  # type: ignore[assignment]
+        self.config = app.config.get("VIEWSETS", {})  # type: ignore[partially-unknown]
         app.extensions["viewsets"] = self
         self.ViewSet = self.view_set_cls
 
@@ -123,16 +119,18 @@ class ViewSets:
         if "flask-marshmallow" not in app.extensions:
             return
 
-        from .masqla.viewsets import AbstractBaseModelViewSet
+        from .masqla.viewsets import ModelViewSet
 
-        base_model_view_set = self.base_model_view_set or AbstractBaseModelViewSet  # type: ignore[todo]
-        # TODO(quentinboudinel): TD-1
-        # TD-1
+        model_view_set_cls = cast(
+            type[ModelViewSet[M]],
+            self.model_view_set_cls or ModelViewSet,
+        )
 
-        class ModelViewSet[M: Model](base_model_view_set[M]):  # type: ignore[todo]
-            # TODO(quentinboudinel): TD-1
-            # TD-1
-            db = app.extensions["sqlalchemy"]
-            vs = self
-
-        self.ModelViewSet = ModelViewSet
+        self.ModelViewSet = type(
+            "ModelViewSet",
+            (model_view_set_cls,),
+            {
+                "db": app.extensions["sqlalchemy"],
+                "vs": self,
+            },
+        )

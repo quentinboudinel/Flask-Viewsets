@@ -22,7 +22,9 @@ if TYPE_CHECKING:
 
     from flask.typing import ResponseReturnValue, RouteCallable
 
-    from .typing import ConverterType, RouteDecorator
+    from flask_viewsets.extension import ViewSets
+
+    from .typing import ConverterType, Model, RouteDecorator
 
 
 class ViewSet(View, metaclass=ABCMeta):
@@ -46,6 +48,7 @@ class ViewSet(View, metaclass=ABCMeta):
 
     action_decorators: ClassVar[dict[str, Iterable[RouteDecorator]]] = {}
     method_actions: dict[str, str]
+    vs: ViewSets[Model]
 
     def __init__(self, method_actions: dict[str, str]) -> None:
         """Initialize the viewset with the given method actions.
